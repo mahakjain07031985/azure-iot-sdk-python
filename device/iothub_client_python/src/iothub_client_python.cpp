@@ -947,6 +947,31 @@ public:
     std::string protocolGatewayHostName;
 };
 
+
+//class exposed to py used as parameter for setOption w/ proxy
+
+class HttpProxyOptions
+{
+public:
+    HttpProxyOptions(
+        std::string _hostAddress,
+        int _port,
+        std::string _username,
+        std::string _password
+        ) :
+        hostAddress(_hostAddress),
+        port(_port),
+        username(_username),
+        password(_password)
+    {
+    }
+
+    std::string hostAddress;
+    int port;
+    std::string username;
+    std::string password;
+}
+
 // callbacks
 
 typedef struct
@@ -2012,6 +2037,18 @@ public:
                             IoTHubDeviceClient_SetOption(iotHubClientHandle, optionName.c_str(), &value) :
                             IoTHubModuleClient_SetOption(iotHubClientHandle, optionName.c_str(), &value);
             }
+        }
+        else if (typeid(option) == typeid(HttpProxyOptions))
+        {
+            HTTP_PROXY_OPTIONS proxy_options;
+            proxy_options.host_address = option.host_address.c_str();
+            proxy_options.port = option.port;
+            proxy_options.username = option.username.c_str();
+            proxy_options.password = option.username.c_str();
+
+            result = (client_interface_type == CLIENT_INTERFACE_DEVICE) ?
+                        IoTHubDeviceClient_SetOption(iotHubClientHandle, optionName.c_str(), &proxy_options) :
+                        IoTHubModuleClient_SetOption(iotHubClientHandle, optionName.c_str(), &proxy_options);
         }
         else
         {
