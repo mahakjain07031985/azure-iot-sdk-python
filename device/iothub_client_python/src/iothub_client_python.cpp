@@ -1995,8 +1995,11 @@ public:
         )
     {
         IOTHUB_CLIENT_RESULT result = IOTHUB_CLIENT_OK;
-
-        if (PyLong_Check(option.ptr()))             //alias to PyInt_Check in Python 2
+#ifdef IS_PY3
+        if (PyLong_Check(option.ptr()))
+#else
+        if (PyInt_Check(option.ptr()) || PyLong_Check(option.ptr()))
+#endif
         {
             // Cast to 64 bit value, as SetOption expects 64 bit for some integer options
             uint64_t value = (uint64_t)boost::python::extract<long>(option);
@@ -2007,7 +2010,11 @@ public:
                             IoTHubModuleClient_SetOption(iotHubClientHandle, optionName.c_str(), &value);
             }
         }
-        else if (PyUnicode_Check(option.ptr()))     //alias to PyString_Check in Python 2
+#ifdef IS_PY3
+        else if (PyUnicode_Check(option.ptr()))
+#else
+        else if (PyString_Check(option.ptr()) || PyUnicode_Check(option.ptr()))
+#endif
         {
             std::string stringValue = boost::python::extract<std::string>(option);
             {
